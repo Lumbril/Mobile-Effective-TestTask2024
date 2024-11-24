@@ -1,0 +1,22 @@
+version: '3.3'
+
+services:
+  server:
+    restart: "no"
+    build: ./server
+    ports:
+      - "8000:8000"
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres/postgres
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13.0-alpine
+    restart: "no"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
