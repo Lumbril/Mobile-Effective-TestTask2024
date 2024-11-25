@@ -59,7 +59,7 @@ public class TaskControllerTests {
                 .tokenType("access")
                 .jti("jti")
                 .build();
-        Client client = new Client(1L, "str@str.com", "passwd", Role.ROLE_USER);
+        Client client = new Client(1L, "str@str.com", "passwd", Role.ROLE_ADMIN);
 
         Mockito.doReturn(tokenBody).when(jwtService).getTokenBody(any());
         Mockito.doReturn(client).when(clientService).getByIdFromToken(any());
@@ -86,7 +86,7 @@ public class TaskControllerTests {
                 .tokenType("access")
                 .jti("jti")
                 .build();
-        Client client = new Client(1L, "str@str.com", "passwd", Role.ROLE_USER);
+        Client client = new Client(1L, "str@str.com", "passwd", Role.ROLE_ADMIN);
         Task task = new Task(1L, "title", "description", TaskStatus.WAITING, TaskPriority.LOW, client, client);
         ClientResponse clientResponseRight = ClientResponse.builder()
                 .id(client.getId())
