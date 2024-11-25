@@ -42,8 +42,22 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    public Task getByIdAndPerformerId(Long id, Long performerId) {
+        return taskRepository.findByIdAndPerformer_Id(id, performerId)
+                .orElseThrow(() -> new NoSuchElementException("Вы не являетесь исполнителем задачи с таким id"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Task> getAll() {
         return taskRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Task> getAllByPerformerId(Long performerId) {
+        Pageable pageable = PageRequest.of(0, 10);
+        return taskRepository.findAllByPerformer_Id(performerId, pageable).getContent();
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.example.server.dto.response.TaskResponse;
 import com.example.server.dto.response.TaskWithCommentPaginationResponse;
 import com.example.server.entities.Client;
 import com.example.server.entities.Task;
+import com.example.server.entities.enums.Role;
 import com.example.server.services.impl.TaskServiceImpl;
 import com.example.server.services.impl.TaskWithCommentServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -57,6 +59,7 @@ public class TaskController {
             )
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createTask(@RequestBody @Validated TaskCreateRequest taskCreateRequest,
                                         @AuthenticationPrincipal Client client) {
         Task task = taskService.createFromRequestWithAuthor(taskCreateRequest, client);
@@ -83,6 +86,7 @@ public class TaskController {
             )
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateTask(@PathVariable Long id,
                                         @RequestBody @Validated TaskUpdateRequest taskUpdateRequest,
                                         @AuthenticationPrincipal Client client) {
@@ -110,8 +114,16 @@ public class TaskController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTask(@PathVariable Long id) {
-        Task task = taskService.get(id);
+    public ResponseEntity<?> getTask(@PathVariable Long id,
+                                     @AuthenticationPrincipal Client client) {
+        Task task;
+
+        if (client.getRole() == Role.ROLE_ADMIN) {
+             task = taskService.get(id);
+        } else {
+            task = taskService.getByIdAndPerformerId(id, client.getId());
+        }
+
         TaskResponse taskResponse = getTaskResponse(task);
 
         return ResponseEntity.ok().body(taskResponse);
@@ -128,8 +140,15 @@ public class TaskController {
             )
     })
     @GetMapping("/list")
-    public ResponseEntity<?> getTaskList() {
-        List<Task> taskList = taskService.getAll();
+    public ResponseEntity<?> getTaskList(@AuthenticationPrincipal Client client) {
+        List<Task> taskList;
+
+        if (client.getRole() == Role.ROLE_ADMIN) {
+            taskList  = taskService.getAll();
+        } else {
+            taskList = taskService.getAllByPerformerId(client.getId());
+        }
+
         List<TaskResponse> taskResponseList = taskList.stream()
                 .map(task -> getTaskResponse(task))
                 .toList();
@@ -152,6 +171,7 @@ public class TaskController {
             )
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteTask(@PathVariable Long id,
                                         @AuthenticationPrincipal Client client) {
         taskService.deleteByIdAndAuthorId(id, client.getId());
@@ -202,6 +222,7 @@ public class TaskController {
             )
     })
     @GetMapping("/list/filter")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getTaskWithFilters(
             @RequestParam(name = "author_id", required = false) Long authorId,
             @RequestParam(name = "performer_id", required = false) Long performerId,

@@ -12,7 +12,9 @@ import java.util.List;
 public interface TaskService {
     Task get(Long id);
     Task getByIdAndAuthorId(Long id, Long authorId);
+    Task getByIdAndPerformerId(Long id, Long performerId);
     List<Task> getAll();
+    List<Task> getAllByPerformerId(Long performerId);
     Task createFromRequestWithAuthor(TaskCreateRequest taskCreateRequest, Client client);
     Task updateFromRequestWithAuthor(Long id, TaskUpdateRequest taskUpdateRequest, Client client);
     Task changeStatus(Long id, Long clientId, TaskStatus status);

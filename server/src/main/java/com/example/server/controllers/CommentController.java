@@ -7,6 +7,7 @@ import com.example.server.dto.response.ErrorResponse;
 import com.example.server.dto.response.TaskResponse;
 import com.example.server.entities.Client;
 import com.example.server.entities.Comment;
+import com.example.server.entities.enums.Role;
 import com.example.server.services.impl.CommentServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,7 +54,13 @@ public class CommentController {
     public ResponseEntity<?> createComment(@PathVariable(value = "task_id") Long taskId,
                                            @RequestBody CommentCreateRequest commentCreateRequest,
                                            @AuthenticationPrincipal Client client) {
-        Comment comment = commentService.createFromRequest(commentCreateRequest, client, taskId);
+        Comment comment;
+        if (client.getRole() == Role.ROLE_ADMIN) {
+            comment = commentService.createFromRequest(commentCreateRequest, client, taskId);
+        } else {
+            comment = commentService.createFromRequestByPerformer(commentCreateRequest, client, taskId);
+        }
+
         CommentResponse commentResponse = getCommentResponse(comment);
 
         return ResponseEntity.ok().body(commentResponse);

@@ -33,6 +33,20 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
+    public Comment createFromRequestByPerformer(CommentCreateRequest commentCreateRequest, Client performer, Long taskId) {
+        Task task = taskService.getByIdAndPerformerId(taskId, performer.getId());
+
+        Comment comment = Comment.builder()
+                .text(commentCreateRequest.getText())
+                .author(performer)
+                .task(task)
+                .build();
+
+        return commentRepository.save(comment);
+    }
+
+    @Override
     public List<Comment> getCommentsByTask(Long taskId) {
         return commentRepository.getCommentByTask_Id(taskId);
     }
